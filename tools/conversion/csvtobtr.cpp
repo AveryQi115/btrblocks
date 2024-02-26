@@ -88,7 +88,8 @@ int main(int argc, char **argv)
             throw Generic_Exception("Unable to open specified csv file");
         }
         // parse writes the binary files
-        files::convertCSV(FLAGS_csv, schema, FLAGS_binary);
+	auto separator = ",";
+        files::convertCSV(FLAGS_csv, schema, FLAGS_binary, separator);
         auto end_time = std::chrono::steady_clock::now();
         binary_creation_time = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time).count();
     }

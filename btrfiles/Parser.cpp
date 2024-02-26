@@ -66,6 +66,7 @@ void convertCSV(const string csv_path, const YAML::Node &schema, const string &o
         .delimiter(*csv_separator.c_str())
         .terminator('\n');
 
+      bool header = true;
       u32 tuple_i = 0;
       //u32 column_count = parser.begin()->size();
       for ( auto &tuple : parser ) {
@@ -75,15 +76,22 @@ void convertCSV(const string csv_path, const YAML::Node &schema, const string &o
 //           cerr << "will ignore this line" << endl;
 //           continue;
 //         }
+         if (header){
+	     header = false;
+	     continue;
+	 }
          tuple_i++;
          u32 col_i = 0;
          string column_debug_str; // for debugging
          try {
             for ( auto &column_csv_str: tuple ) {
                auto &column_descriptor = columns[col_i++];
-               if ( column_descriptor.column_type == ColumnType::SKIP ) // TODO: Reset
-                  continue;
+               if ( column_descriptor.column_type == ColumnType::SKIP ) { // TODO: Reset
+                  // cout<<"[haoyu.debug.Parser] col"<<col_i<<" skipped"<<endl;
+		  continue;
+	       }
 
+               // cout<<"[haoyu.debug.Parser] col"<<col_i<<" unskipped"<<endl;
                string column_str;
                if ( column_descriptor.column_type != ColumnType::STRING ) {
                   column_str = trim_copy(column_csv_str);
@@ -148,16 +156,20 @@ void convertCSV(const string csv_path, const YAML::Node &schema, const string &o
          }
       }
    }
+
    // write data to binary
    {
       for ( u32 col_i = 0; col_i < columns.size(); col_i++ ) {
          auto &column_descriptor = columns[col_i];
-         if ( column_descriptor.column_type == ColumnType::SKIP )
-            continue;
+         if ( column_descriptor.column_type == ColumnType::SKIP ){
+            cout<<"[haoyu.debug.Parser] col"<<col_i<<" skip"<<endl;
+	    continue;
+	 }
          string output_column_file = out_dir + std::to_string(col_i + 1) + "_" + column_descriptor.name;
          // -------------------------------------------------------------------------------------
          // Write Bitmap
          const string output_column_bitmap_file = output_column_file + ".bitmap";
+   	 cout<<"[haoyu.debug.Parser] writing binary file"<< output_column_bitmap_file <<endl;
          writeBinary(output_column_bitmap_file.c_str(), column_descriptor.set_bitmap);
          // -------------------------------------------------------------------------------------
          switch ( column_descriptor.column_type ) {
