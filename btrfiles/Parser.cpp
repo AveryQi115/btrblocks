@@ -66,7 +66,7 @@ void convertCSV(const string csv_path, const YAML::Node &schema, const string &o
         .delimiter(*csv_separator.c_str())
         .terminator('\n');
 
-      bool header = true;
+      bool header = false;
       u32 tuple_i = 0;
       //u32 column_count = parser.begin()->size();
       for ( auto &tuple : parser ) {
